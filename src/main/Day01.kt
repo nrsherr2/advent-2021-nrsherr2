@@ -1,12 +1,12 @@
 import kotlin.system.measureTimeMillis
 
 fun main() {
-    val timeToExecuteDay1 = measureTimeMillis {
-        with(Day01()) {
-            //given the example for part 1, ensure we get the same result they do
-            val day1ExampleInput = readInput("Day01_Test")
-            val day1Input = readInput("Day01_Input")
-            
+    with(Day01()) {
+        //given the example for part 1, ensure we get the same result they do
+        val day1ExampleInput = readInput("Day01_Test")
+        val day1Input = readInput("Day01_Input")
+        
+        val timeToExecuteDay1 = measureTimeMillis {
             val part1ExampleOutput = part1(day1ExampleInput)
             assertEquals(part1ExampleOutput, 7)
             
@@ -27,8 +27,8 @@ fun main() {
             """.trimIndent()
             )
         }
+        println("Processing time: ${timeToExecuteDay1}ms")
     }
-    println("Processing time: ${timeToExecuteDay1}ms")
 }
 
 class Day01 {

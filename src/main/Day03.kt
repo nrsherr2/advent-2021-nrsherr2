@@ -1,10 +1,10 @@
 import kotlin.system.measureTimeMillis
 
 fun main() {
-    val timeToExecuteDay3 = measureTimeMillis {
+
         val day3ExampleInput = readInput("Day03_Test")
         val day3Input = readInput("Day03_Input")
-        
+    val timeToExecuteDay3 = measureTimeMillis {
         val day3Part1ExampleOutput = Day03.part1(day3ExampleInput)
         Day03.assertEquals(198, day3Part1ExampleOutput)
         
