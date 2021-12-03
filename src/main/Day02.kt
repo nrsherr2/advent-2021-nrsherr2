@@ -5,21 +5,29 @@ fun main() {
         with(Day02()) {
             val day2ExampleInput = readInput("Day02_Test")
             val day2Input = readInput("Day02_Input")
-
+            
             val part1ExampleOutput = part1(day2ExampleInput)
             assertEquals(part1ExampleOutput, 150)
-
+            
             val part1Output = part1(day2Input)
-            println(part1Output)
-
-
+            
+            
             val part2ExampleOutput = part2(day2ExampleInput)
             assertEquals(900, part2ExampleOutput)
-
+            
             val part2Output = part2(day2Input)
-            println(part2Output)
+            println(
+                """
+                *** PART 1 ***
+                $part1Output
+                *** PART 2 ***
+                $part2Output
+                ***  END  ***
+            """.trimIndent()
+            )
         }
     }
+    println("Processing time: ${timeToExecuteDay2}ms")
 }
 
 class Day02 {
@@ -41,12 +49,12 @@ class Day02 {
             }
         return horizontalMvmt * verticalMovement
     }
-
+    
     fun part2(input: List<String>): Int {
         var horizontalMvmt = 0
         var verticalMovement = 0
         var aim = 0
-
+        
         input.asSequence()
             .map {
                 val spl = it.split(" ")
@@ -65,7 +73,7 @@ class Day02 {
             }
         return horizontalMvmt * verticalMovement
     }
-
+    
     fun assertEquals(condition: Any?, expected: Any?) {
         require(condition == expected) { "Test Failed! Expected $expected, Received $condition" }
     }
