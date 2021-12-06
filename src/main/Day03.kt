@@ -4,13 +4,13 @@ fun main() {
     
     val day3ExampleInput = readInput("Day03_Test")
     val day3Input = readInput("Day03_Input")
+    val day3Part1ExampleOutput = Day03.part1(day3ExampleInput)
+    assertEquals(198, day3Part1ExampleOutput)
+    
+    val day3Part2ExampleOutput = Day03.part2(day3ExampleInput)
+    assertEquals(230, day3Part2ExampleOutput)
+    
     val timeToExecuteDay3 = measureTimeMillis {
-        val day3Part1ExampleOutput = Day03.part1(day3ExampleInput)
-        assertEquals(198, day3Part1ExampleOutput)
-        
-        val day3Part2ExampleOutput = Day03.part2(day3ExampleInput)
-        assertEquals(230, day3Part2ExampleOutput)
-        
         val part1Output = Day03.part1(day3Input)
         val part2Output = Day03.part2(day3Input)
         println(

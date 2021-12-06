@@ -5,16 +5,14 @@ fun main() {
         //given the example for part 1, ensure we get the same result they do
         val day1ExampleInput = readInput("Day01_Test")
         val day1Input = readInput("Day01_Input")
+    
+        val part1ExampleOutput = part1(day1ExampleInput)
+        assertEquals(7,part1ExampleOutput)
+        val part2ExampleOutput = part2(day1ExampleInput)
+        assertEquals(5,part2ExampleOutput)
         
         val timeToExecuteDay1 = measureTimeMillis {
-            val part1ExampleOutput = part1(day1ExampleInput)
-            assertEquals(7,part1ExampleOutput)
-            
             val part1Output = part1(day1Input)
-            
-            val part2ExampleOutput = part2(day1ExampleInput)
-            assertEquals(5,part2ExampleOutput)
-            
             val part2Output = part2(day1Input)
             
             println(
