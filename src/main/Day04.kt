@@ -6,11 +6,14 @@ fun main() {
     
     val exampleGame = Day04.parseInput(day4ExampleInput)
     val day4Part1TestOutput = exampleGame.play().let { it.first * it.second }
+    val day4Part2TestOutput = exampleGame.playToLose().let { it.first * it.second }
     assertEquals(4512, day4Part1TestOutput)
+    assertEquals(1924, day4Part2TestOutput)
     
     val timeToExecuteDay3 = measureTimeMillis {
-        val part1Output = Day04.parseInput(day4Input).play().let { it.first * it.second }
-        val part2Output = 0
+        val game = Day04.parseInput(day4Input)
+        val part1Output = game.play().let { it.first * it.second }
+        val part2Output = game.playToLose().let { it.first * it.second }
 //        val part1Output = Day03.part1(day3Input)
 //        val part2Output = Day03.part2(day3Input)
         println(
@@ -55,11 +58,17 @@ class BingoGame(
         throw IllegalArgumentException("Could not find winning board!")
     }
     
-    fun playToLose():Pair<Int,Int>{
+    fun playToLose(): Pair<Int, Int> {
+        var squidGame = boards.toList()
         callOrder.forEach { number ->
             callNumber(number)
+            if(squidGame.size > 1){
+                squidGame = squidGame.filter { !it.isWon() }
+            }else{
+                squidGame.first().sumOfUnmarkedIfWon()?.let { return number to it }
+            }
         }
-        TODO()
+        throw IllegalArgumentException("Could not find winning board!")
     }
     
     private fun callNumber(numero: Int) = boards.forEach { it.markCell(numero) }
