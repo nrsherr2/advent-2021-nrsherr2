@@ -7,7 +7,7 @@ fun main() {
         val day2Input = readInput("Day02_Input")
         val timeToExecuteDay2 = measureTimeMillis {
             val part1ExampleOutput = part1(day2ExampleInput)
-            assertEquals(part1ExampleOutput, 150)
+            assertEquals(150, part1ExampleOutput)
             
             val part1Output = part1(day2Input)
             
@@ -73,7 +73,5 @@ class Day02 {
         return horizontalMvmt * verticalMovement
     }
     
-    fun assertEquals(condition: Any?, expected: Any?) {
-        require(condition == expected) { "Test Failed! Expected $expected, Received $condition" }
-    }
+    
 }

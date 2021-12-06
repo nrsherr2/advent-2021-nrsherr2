@@ -6,10 +6,10 @@ fun main() {
     val day3Input = readInput("Day03_Input")
     val timeToExecuteDay3 = measureTimeMillis {
         val day3Part1ExampleOutput = Day03.part1(day3ExampleInput)
-        Day03.assertEquals(198, day3Part1ExampleOutput)
+        assertEquals(198, day3Part1ExampleOutput)
         
         val day3Part2ExampleOutput = Day03.part2(day3ExampleInput)
-        Day03.assertEquals(230, day3Part2ExampleOutput)
+        assertEquals(230, day3Part2ExampleOutput)
         
         val part1Output = Day03.part1(day3Input)
         val part2Output = Day03.part2(day3Input)
@@ -71,7 +71,5 @@ object Day03 {
         return this.joinToString("").toInt(2)
     }
     
-    fun assertEquals(expected: Any?, condition: Any?) {
-        require(condition == expected) { "Test Failed! Expected $expected, Received $condition" }
-    }
+
 }

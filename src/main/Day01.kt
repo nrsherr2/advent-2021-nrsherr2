@@ -8,12 +8,12 @@ fun main() {
         
         val timeToExecuteDay1 = measureTimeMillis {
             val part1ExampleOutput = part1(day1ExampleInput)
-            assertEquals(part1ExampleOutput, 7)
+            assertEquals(7,part1ExampleOutput)
             
             val part1Output = part1(day1Input)
             
             val part2ExampleOutput = part2(day1ExampleInput)
-            assertEquals(part2ExampleOutput, 5)
+            assertEquals(5,part2ExampleOutput)
             
             val part2Output = part2(day1Input)
             
@@ -53,8 +53,6 @@ class Day01 {
         return part1(windows.map { it.toString() })
     }
     
-    fun assertEquals(condition: Any?, expected: Any?) {
-        require(condition == expected) { "Test Failed! Expected $expected, Received $condition" }
-    }
+
 }
 
