@@ -3,13 +3,16 @@ import kotlin.system.measureTimeMillis
 fun main() {
     val day8ExampleInput = readInput("Day08_Test")
     assertEquals(26, Day08.part1(day8ExampleInput))
-    assertEquals(5353,Day08.part2(listOf("acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf")))
-    assertEquals(61229, Day08.part2(day8ExampleInput))
+//    assertEquals(
+//        5353,
+//        Day08.part2(listOf("acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf"))
+//    )
+//    assertEquals(61229, Day08.part2(day8ExampleInput))
     val day8Input = readInput("Day08_Input")
 
     val timeToExecuteDay8 = measureTimeMillis {
         val part1Output = Day08.part1(day8Input)
-        val part2Output = null
+        val part2Output = Day08.part2(day8Input)
         println(
             """
                 *** PART 1 ***
@@ -33,7 +36,8 @@ object Day08 {
     fun part2(input: List<String>): Int {
         return input.sumOf { line ->
             val display = determineDisplayMapping(line.replace(" | ", " ").split(" "))
-            line.split(" | ")[1].split(" ").map { display.determineNumber(it.toSortedString()) }.joinToString("").toInt()
+            line.split(" | ")[1].split(" ").map { display.determineNumber(it.toSortedString()) }.joinToString("")
+                .toInt()
         }
     }
 
@@ -62,10 +66,7 @@ object Day08 {
             !listOf(display.top, display.upRight, display.mid, display.lwLeft, display.lwRight, display.bot)
                 .contains(it)
         }
-        return display.also {
-            it.lightEmUp()
-            println("***")
-        }
+        return display
     }
 }
 
@@ -78,32 +79,44 @@ class SevenDigitDisplay(
     var lwLeft: Char? = null,
     var bot: Char? = null,
 ) {
-    fun lightEmUp() = listOf(one, two, three, four, five, six, seven, eight, nine, zero).forEach { it+1 }
-
-    fun determineNumber(input: String) =
-        (listOf(one, two, three, four, five, six, seven, eight, nine, zero).indexOfFirst { it == input } + 1)
+    fun determineNumber(input: String): Int {
+        return (listOf(zero, one, two, three, four, five, six, seven, eight, nine).indexOfFirst { it == input })
             .also { if (it == -1) throw IllegalArgumentException("Could not find match for $input") }
+    }
+
+    private fun printNumber(string: String) =
+        """
+${if (string.contains(top!!)) "*" else " "}  ${if (string.contains(top!!)) "*" else " "}  ${if (string.contains(top!!)) "*" else " "}
+${if (string.contains(upLeft!!)) "*" else " "}     ${if (string.contains(upRight!!)) "*" else " "}
+${if (string.contains(upLeft!!)) "*" else " "}     ${if (string.contains(upRight!!)) "*" else " "}
+${if (string.contains(upLeft!!)) "*" else " "}     ${if (string.contains(upRight!!)) "*" else " "}
+${if (string.contains(mid!!)) "*" else " "}  ${if (string.contains(mid!!)) "*" else " "}  ${if (string.contains(mid!!)) "*" else " "}
+${if (string.contains(lwLeft!!)) "*" else " "}     ${if (string.contains(lwRight!!)) "*" else " "}
+${if (string.contains(lwLeft!!)) "*" else " "}     ${if (string.contains(lwRight!!)) "*" else " "}
+${if (string.contains(lwLeft!!)) "*" else " "}     ${if (string.contains(lwRight!!)) "*" else " "}
+${if (string.contains(bot!!)) "*" else " "}  ${if (string.contains(bot!!)) "*" else " "}  ${if (string.contains(bot!!)) "*" else " "}
+        """.trimIndent()
 
     private val one
-        get() = displayString(upRight, lwRight).toSortedString().also{println(it)}
+        get() = displayString(upRight, lwRight).toSortedString()
     private val two
-        get() = displayString(top, upRight, mid, lwLeft, bot).toSortedString().also{println(it)}
+        get() = displayString(top, upRight, mid, lwLeft, bot).toSortedString()
     private val three
-        get() = displayString(top, upRight, mid, lwRight, bot).toSortedString().also{println(it)}
+        get() = displayString(top, upRight, mid, lwRight, bot).toSortedString()
     private val four
-        get() = displayString(upLeft, upRight, mid, lwRight).toSortedString().also{println(it)}
+        get() = displayString(upLeft, upRight, mid, lwRight).toSortedString()
     private val five
-        get() = displayString(top, upLeft, mid, lwRight, bot).toSortedString().also{println(it)}
+        get() = displayString(top, upLeft, mid, lwRight, bot).toSortedString()
     private val six
-        get() = displayString(top, upLeft, mid, lwRight, lwLeft, bot).toSortedString().also{println(it)}
+        get() = displayString(top, upLeft, mid, lwRight, lwLeft, bot).toSortedString()
     private val seven
-        get() = displayString(top, upRight, lwRight).toSortedString().also{println(it)}
+        get() = displayString(top, upRight, lwRight).toSortedString()
     private val eight
-        get() = displayString(top, upLeft, upRight, mid, lwRight, lwLeft, bot).toSortedString().also{println(it)}
+        get() = displayString(top, upLeft, upRight, mid, lwRight, lwLeft, bot).toSortedString()
     private val nine
-        get() = displayString(top, upRight, upLeft, mid, lwRight).toSortedString().also{println(it)}
+        get() = displayString(top, upRight, upLeft, mid, lwRight, bot).toSortedString()
     private val zero
-        get() = displayString(top, upLeft, upRight, lwRight, lwLeft, bot).toSortedString().also{println(it)}
+        get() = displayString(top, upLeft, upRight, lwRight, lwLeft, bot).toSortedString()
 
     private fun displayString(vararg c: Char?) = c.joinToString("").toSortedString()
 }
