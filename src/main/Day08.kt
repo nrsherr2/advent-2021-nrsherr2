@@ -3,10 +3,11 @@ import kotlin.system.measureTimeMillis
 
 fun main() {
     val day8ExampleInput = readInput("Day08_Test")
+    assertEquals(26, Day08.part1(day8ExampleInput))
     val day8Input = readInput("Day08_Input")
     
     val timeToExecuteDay8 = measureTimeMillis {
-        val part1Output = 0
+        val part1Output = Day08.part1(day8Input)
         val part2Output = 0
         println(
             """
@@ -22,7 +23,11 @@ fun main() {
 }
 
 object Day08 {
-
+    fun part1(input:List<String>) = input.sumOf { line ->
+        line.split(" | ")[1].split(" ").count { signal ->
+            signal.length in listOf(2,4,3,7)
+        }
+    }
 }
 
 
