@@ -121,6 +121,3 @@ ${if (string.contains(bot!!)) "*" else " "}  ${if (string.contains(bot!!)) "*" e
     private fun displayString(vararg c: Char?) = c.joinToString("").toSortedString()
 }
 
-fun String.toSortedString() = toCharArray().sorted().joinToString("")
-
-
