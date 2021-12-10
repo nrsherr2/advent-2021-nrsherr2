@@ -51,7 +51,7 @@ object Day10 {
                     else -> throw IllegalArgumentException()
                 }
             }
-            println("${openChunks.joinToString("") { desiredChar(it.open).toString() }}, $counter")
+//            println("${openChunks.joinToString("") { desiredChar(it.open).toString() }}, $counter")
             return@map counter
         }
         return median(scores)
