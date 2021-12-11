@@ -3,6 +3,7 @@ import kotlin.system.measureTimeMillis
 fun main() {
     val day11ExampleInput = readInput("Day11_Test")
     assertEquals(1656, Day11.part1(day11ExampleInput))
+    assertEquals(195, Day11.part2(day11ExampleInput))
     Day11.part2(day11ExampleInput)
     val day11Input = readInput("Day11_Input")
 
@@ -62,15 +63,14 @@ object Day11 {
 
     fun part2(input: List<String>): Int {
         val takoGrid = input.map { line -> line.map { Takodachi(it.digitToInt()) } }
-        var wah = 0
-        (1..195).forEach { _ ->
+        var i = 1
+        do {
             var points =
                 takoGrid.mapIndexed { rowNum, row -> List(row.size) { colNum -> Point(rowNum, colNum) } }.flatten()
             do {
                 val newPoints = mutableListOf<Point>()
                 points.forEach { (rowNum, colNum) ->
                     if (takoGrid[rowNum][colNum].bonk()) {
-                        wah++
                         newPoints.addAll(
                             listOf(
                                 Point(rowNum - 1, colNum),
@@ -93,8 +93,9 @@ object Day11 {
                 points = newPoints
             } while (points.isNotEmpty())
             takoGrid.forEach { row -> row.forEach { it.reset() } }
-        }
-        return wah
+            i++
+        } while (!takoGrid.flatten().all { it.cookieLevel == 0 })
+        return i - 1
     }
 
 
