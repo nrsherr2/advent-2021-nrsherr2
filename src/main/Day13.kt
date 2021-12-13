@@ -1,10 +1,10 @@
 import kotlin.system.measureTimeMillis
 
 fun main() {
-    Day13.warn()
+//    Day13.warn()
     val day13ExampleInput = readInput("Day13_Test")
     assertEquals(17, Day13.part1(day13ExampleInput))
-    assertEquals(16, Day13.part2(day13ExampleInput))
+    println(Day13.part2(day13ExampleInput)) //this should be a square
     val day13Input = readInput("Day13_Input")
 
     val timeToExecuteDay13 = measureTimeMillis {
@@ -24,42 +24,36 @@ fun main() {
 }
 
 object Day13 {
-    fun warn(): Nothing = TODO("Bad Implementation! Do it again!")
     fun part1(input: List<String>): Int {
-        val dotCoords = input.subList(0, input.indexOf("")).map { s ->
-            s.split(",").let { Point(it[0].toInt(), it[1].toInt()) }
-        }
-        var paper = buildPaper(dotCoords)
-        val moves = input.subList(input.indexOf("") + 1, input.size)
-            .map { line -> line.takeLastWhile { it != ' ' }.split("=").let { Fold(it[0][0], it[1].toInt()) } }
+        val pair = parseInput(input)
+        var paper = pair.first
+        val moves = pair.second
         paper = paper.foldY(moves.first().degree)
-//        moves.forEach {
-//            paper = when (it.axis) {
-//                'x' -> TODO()
-//                'y' -> paper.foldY(it.degree)
-//                else -> throw IllegalArgumentException()
-//            }
-//        }
         return paper.sumOf { row -> row.count { it.marked } }
     }
 
-    fun part2(input: List<String>): Int {
-        val dotCoords = input.subList(0, input.indexOf("")).map { s ->
-            s.split(",").let { Point(it[0].toInt(), it[1].toInt()) }
-        }
-        var paper = buildPaper(dotCoords)
-        println(paper.stringRep())
-        val moves = input.subList(input.indexOf("") + 1, input.size)
-            .map { line -> line.takeLastWhile { it != ' ' }.split("=").let { Fold(it[0][0], it[1].toInt()) } }
+    fun part2(input: List<String>): String {
+        val pair = parseInput(input)
+        var paper = pair.first
+        val moves = pair.second
         moves.forEach {
             paper = when (it.axis) {
                 'x' -> paper.foldX(it.degree)
                 'y' -> paper.foldY(it.degree)
                 else -> throw IllegalArgumentException()
             }
-            println(paper.stringRep())
         }
-        return paper.sumOf { row -> row.count { it.marked } }
+        return paper.stringRep()
+    }
+
+    private fun parseInput(input: List<String>): Pair<TransparentPaper, List<Fold>> {
+        val dotCoords = input.subList(0, input.indexOf("")).map { s ->
+            s.split(",").let { Point(it[1].toInt(), it[0].toInt()) }
+        }
+        var paper = buildPaper(dotCoords)
+        val moves = input.subList(input.indexOf("") + 1, input.size)
+            .map { line -> line.takeLastWhile { it != ' ' }.split("=").let { Fold(it[0][0], it[1].toInt()) } }
+        return Pair(paper, moves)
     }
 
     private fun TransparentPaper.foldY(degree: Int): TransparentPaper {
@@ -95,17 +89,19 @@ object Day13 {
                 }
             }
         }
+        println(leftSide.stringRep())
+        println(rightSide.stringRep())
         rightSide.indices.forEach { rowNum ->
             rightSide[0].indices.forEach { colNum ->
-                leftSide[rowNum][leftSide.size - 1 - colNum].marked =
-                    leftSide[rowNum][leftSide.size - 1 - colNum].marked || rightSide[rowNum][colNum].marked
+                leftSide[rowNum][leftSide[0].size - 1 - colNum].marked =
+                    leftSide[rowNum][leftSide[0].size - 1 - colNum].marked || rightSide[rowNum][colNum].marked
             }
         }
         return leftSide
     }
 
     private fun TransparentPaper.stringRep() =
-        this.joinToString("\n") { ln -> ln.joinToString("") { if (it.marked) "#" else "." } }.plus("\n")
+        this.joinToString("\n") { ln -> ln.joinToString("") { if (it.marked) "# " else "  " } }.plus("\n")
 
     private fun buildPaper(coords: List<Point>): TransparentPaper =
         (0..coords.maxOf { it.rowNum }).map { List(coords.maxOf { it.colNum } + 1) { GridSpot() } }.apply {
