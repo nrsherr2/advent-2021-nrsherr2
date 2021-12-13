@@ -89,8 +89,6 @@ object Day13 {
                 }
             }
         }
-        println(leftSide.stringRep())
-        println(rightSide.stringRep())
         rightSide.indices.forEach { rowNum ->
             rightSide[0].indices.forEach { colNum ->
                 leftSide[rowNum][leftSide[0].size - 1 - colNum].marked =
