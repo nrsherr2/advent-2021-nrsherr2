@@ -4,7 +4,6 @@ fun main() {
     val day11ExampleInput = readInput("Day11_Test")
     assertEquals(1656, Day11.part1(day11ExampleInput))
     assertEquals(195, Day11.part2(day11ExampleInput))
-    Day11.part2(day11ExampleInput)
     val day11Input = readInput("Day11_Input")
 
     val timeToExecuteDay11 = measureTimeMillis {

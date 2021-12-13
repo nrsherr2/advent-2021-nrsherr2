@@ -5,8 +5,9 @@ fun main() {
     assertEquals(10, Day12.part1(Day12.testInputA.split("\n")))
     assertEquals(19, Day12.part1(Day12.testInputB.split("\n")))
     assertEquals(226, Day12.part1(day12ExampleInput))
-//    assertEquals(195, Day12.part2(day12ExampleInput))
-    Day12.part2(day12ExampleInput)
+    assertEquals(36, Day12.part2(Day12.testInputA.split("\n")))
+    assertEquals(103, Day12.part2(Day12.testInputB.split("\n")))
+    assertEquals(3509, Day12.part2(day12ExampleInput))
     val day12Input = readInput("Day12_Input")
 
     val timeToExecuteDay12 = measureTimeMillis {
@@ -30,12 +31,14 @@ object Day12 {
         val mapHead = constructMap(input)
         val initialPath = Path(mapHead)
         val allPaths = pathFindRecurse(initialPath)
-        allPaths.forEach { path -> println(path.path.joinToString(",") { it.name }) }
         return allPaths.size
     }
 
     fun part2(input: List<String>): Int {
-        return 0
+        val mapHead = constructMap(input)
+        val initialPath = Path(mapHead)
+        val allPaths = pathFindRecurseWithMod(initialPath, false)
+        return allPaths.size
     }
 
     private fun pathFindRecurse(currentPath: Path): List<Path> {
@@ -43,6 +46,16 @@ object Day12 {
             if (nextNode.name == "end") listOf(Path(currentPath, nextNode))
             else if (!nextNode.isBig && currentPath.path.contains(nextNode)) return@mapNotNull null
             else pathFindRecurse(Path(currentPath, nextNode))
+        }.flatten()
+    }
+
+    private fun pathFindRecurseWithMod(currentPath: Path, visitedSmallTwiceAlready: Boolean): List<Path> {
+        return currentPath.path.last().neighborNodes.mapNotNull { nextNode ->
+            if (nextNode.name == "end") listOf(Path(currentPath, nextNode))
+            else if (!nextNode.isBig && currentPath.path.contains(nextNode)) {
+                if (visitedSmallTwiceAlready || nextNode.name in listOf("start", "end")) null
+                else pathFindRecurseWithMod(Path(currentPath, nextNode), true)
+            } else pathFindRecurseWithMod(Path(currentPath, nextNode), visitedSmallTwiceAlready)
         }.flatten()
     }
 
