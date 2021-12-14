@@ -1,10 +1,9 @@
-import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 fun main() {
     val day14ExampleInput = readInput("Day14_Test")
     assertEquals(1588, Day14.part1(day14ExampleInput))
-    assertEquals(1588, Day14.part2(day14ExampleInput))
+//    assertEquals(1588, Day14.part2(day14ExampleInput))
     assertEquals(2188189693529, Day14.part2(day14ExampleInput))
     val day14Input = readInput("Day14_Input")
 
@@ -26,7 +25,7 @@ fun main() {
 
 object Day14 {
     fun part1(input: List<String>): Int {
-        val list = input.first().map { CharNode(it.toString()) }.toMutableList()
+        val list = input.first()
         val rules = input.subList(2, input.size).associate {
             val (a, b) = it.split(" -> ")
             a to b
@@ -36,7 +35,7 @@ object Day14 {
     }
 
     fun part2(input: List<String>): Int {
-        val list = input.first().map { CharNode(it.toString()) }.toMutableList()
+        val list = input.first()
         val rules = input.subList(2, input.size).associate {
             val (a, b) = it.split(" -> ")
             a to b
@@ -45,8 +44,8 @@ object Day14 {
         list.windowed(2, 1).forEach {
             val updatedRules = rules.toMutableMap()
                 .apply { putAll(results.associate { res -> res.condition to results.indexOf(res).toString() }) }
-            val map = calculateBloom(it.toMutableList(), updatedRules, 10)
-            results.add(BloomResult(it.joinToString("") { cn -> cn.value }, map))
+            val map = calculateBloom(it, updatedRules, 40)
+            results.add(BloomResult(it, map))
         }
         println(results)
         TODO()
@@ -55,27 +54,30 @@ object Day14 {
     }
 
     private fun calculateBloom(
-        list: MutableList<CharNode>,
+        list: String,
         rules: Map<String, String>,
         bloomSize: Int,
     ): Map<String, Int> {
+        var lt = list
         for (i in 0 until bloomSize) {
             println(i)
-            val newOnesToAdd = mutableListOf<CharNode>()
-            list.windowed(size = 2, step = 1).forEach { window ->
-                val condition = window.joinToString("") { it.value }
-                rules[condition]?.let { newOnesToAdd.add(CharNode(it, window.first())) }
-            }
-            newOnesToAdd.forEach {
-                list.add(list.indexOf(it.prev) + 1, it)
-            }
-            println(list.joinToString("") { it.value })
+            lt = lt.asSequence().mapIndexed { index, thisChar ->
+                if (index + 1 == lt.length) thisChar.toString()
+                else {
+                    rules["$thisChar${lt[index + 1]}"]?.let { "$thisChar$it" } ?: thisChar.toString()
+                }
+            }.joinToString("")
+//            val newOnesToAdd = mutableListOf<CharNode>()
+//            list.windowed(size = 2, step = 1).forEach { window ->
+//                val condition = window.joinToString("") { it.value }
+//                rules[condition]?.let { newOnesToAdd.add(CharNode(it, window.first())) }
+//            }
+//            newOnesToAdd.forEach {
+//                list.add(list.indexOf(it.prev) + 1, it)
+//            }
+//            println(lt)
         }
-        return list.groupingBy { it.value }.eachCount()
-    }
-
-    class CharNode(val value: String, var prev: CharNode? = null) {
-        val id = Random.nextInt()
+        return lt.groupingBy { it.toString() }.eachCount()
     }
 
     data class BloomResult(val condition: String, val outputMap: Map<String, Int>)
