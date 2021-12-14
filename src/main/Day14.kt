@@ -41,11 +41,13 @@ object Day14 {
             a to b
         }
         val results = mutableListOf<BloomResult>()
-        list.windowed(2, 1).forEach {
+        list.windowed(2, 1).forEach {window->
             val updatedRules = rules.toMutableMap()
                 .apply { putAll(results.associate { res -> res.condition to results.indexOf(res).toString() }) }
-            val map = calculateBloom(it, updatedRules, 40)
-            results.add(BloomResult(it, map))
+            val bloomAfter20 = bloom(window,20,updatedRules)
+            println(bloomAfter20)
+            val map = calculateBloom(window, updatedRules, 40)
+            results.add(BloomResult(window, map))
         }
         println(results)
         TODO()
@@ -57,7 +59,14 @@ object Day14 {
         list: String,
         rules: Map<String, String>,
         bloomSize: Int,
-    ): Map<String, Int> {
+    ): Map<String, Int> = bloom(list, bloomSize, rules).groupingBy { it.toString() }.eachCount()
+
+
+    private fun bloom(
+        list: String,
+        bloomSize: Int,
+        rules: Map<String, String>
+    ): String {
         var lt = list
         for (i in 0 until bloomSize) {
             println(i)
@@ -67,17 +76,8 @@ object Day14 {
                     rules["$thisChar${lt[index + 1]}"]?.let { "$thisChar$it" } ?: thisChar.toString()
                 }
             }.joinToString("")
-//            val newOnesToAdd = mutableListOf<CharNode>()
-//            list.windowed(size = 2, step = 1).forEach { window ->
-//                val condition = window.joinToString("") { it.value }
-//                rules[condition]?.let { newOnesToAdd.add(CharNode(it, window.first())) }
-//            }
-//            newOnesToAdd.forEach {
-//                list.add(list.indexOf(it.prev) + 1, it)
-//            }
-//            println(lt)
         }
-        return lt.groupingBy { it.toString() }.eachCount()
+        return lt
     }
 
     data class BloomResult(val condition: String, val outputMap: Map<String, Int>)
