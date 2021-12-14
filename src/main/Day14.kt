@@ -75,7 +75,8 @@ object Day14 {
 //            }
 
             val bloomsFrom20 = binbows.mapIndexed { j, subWind ->
-                println("$i, $j")
+                if (j % 25 == 0)
+                    println("$i, $j")
                 calculateBloom(subWind, rules, maxTime / 2).toMutableMap().apply {
                     if (j < binbows.size - 1) this[subWind.last().toString()] = this[subWind.last().toString()]!! - 1
                 }
