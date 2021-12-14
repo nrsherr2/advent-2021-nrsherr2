@@ -5,7 +5,6 @@ fun main() {
     assertEquals(1588, Day14.part1(day14ExampleInput))
     assertEquals(5, Day14.part2(day14ExampleInput, 2))
     assertEquals(1588, Day14.part2(day14ExampleInput, 10))
-//    assertEquals(1588, Day14.part2(day14ExampleInput))
     assertEquals(2188189693529, Day14.part2(day14ExampleInput))
     val day14Input = readInput("Day14_Input")
 
