@@ -3,9 +3,9 @@ import kotlin.system.measureTimeMillis
 fun main() {
     val day14ExampleInput = readInput("Day14_Test")
     assertEquals(1588, Day14.part1(day14ExampleInput))
-    assertEquals(5, Day14.part2(day14ExampleInput, 2))
-    assertEquals(1588, Day14.part2(day14ExampleInput, 10))
-    assertEquals(2188189693529, Day14.part2(day14ExampleInput))
+    assertEquals(5L, Day14.part2(day14ExampleInput, 2))
+    assertEquals(1588L, Day14.part2(day14ExampleInput, 10))
+    assertEquals(2188189693529L, Day14.part2(day14ExampleInput))
     val day14Input = readInput("Day14_Input")
 
     val timeToExecuteDay14 = measureTimeMillis {
@@ -35,69 +35,41 @@ object Day14 {
         return counts.maxOf { it.value } - counts.minOf { it.value }
     }
 
-    fun part2(input: List<String>, maxTime: Int = 40): Int {
+    fun part2(input: List<String>, maxTime: Int = 40): Long {
         val list = input.first()
         val rules = input.subList(2, input.size).associate {
             val (a, b) = it.split(" -> ")
             a to b
         }
-        val results = mutableListOf<BloomResult>()
-        val michaelsoft = list.windowed(2, 1)
-        michaelsoft.forEachIndexed { i, window ->
-//            val updatedRules = rules.toMutableMap()
-//                .apply { putAll(results.associate { res -> res.condition to results.indexOf(res).toString() }) }
-
-            val b20 = bloom(window, maxTime / 2, rules)
-            val binbows = b20.windowed(2, 1)
-//
-//            val bin = binbows.let {
-//                val last = it.last()
-//                val sl = it.subList(0, it.size - 1)
-//                sl.distinct().associateWith { a -> sl.count {s-> s == a } }.plus(last to 1)
-//            }
-//            val bin20 = bin.entries.mapIndexed { j, (subWind, mult) ->
-//                calculateBloom(subWind, rules, maxTime / 2).toMutableMap().apply {
-//                    if (j < binbows.size - 1) this[subWind.last().toString()] = this[subWind.last().toString()]!! - 1
-//                    this.keys.forEach { this[it] = this[it]!! * mult }
-//                }
-//            }
-//            val m20 = bin20.foldRight(mutableMapOf<String, Int>()) { src, dest ->
-//                src.entries.forEach { ent ->
-//                    if (dest.containsKey(ent.key)) {
-//                        dest[ent.key] = dest[ent.key]!!.plus(ent.value)
-//                    } else {
-//                        dest[ent.key] = ent.value
-//                    }
-//                }
-//                dest
-//            }.apply {
-//                if (i < michaelsoft.size - 1) this[window.last().toString()] = this[window.last().toString()]!! - 1
-//            }
-
-            val bloomsFrom20 = binbows.mapIndexed { j, subWind ->
-                if (j % 25 == 0)
-                    println("$i, $j")
-                calculateBloom(subWind, rules, maxTime / 2).toMutableMap().apply {
-                    if (j < binbows.size - 1) this[subWind.last().toString()] = this[subWind.last().toString()]!! - 1
-                }
-            }
-            val map = bloomsFrom20.foldRight(mutableMapOf<String, Int>()) { src, dest ->
-                src.entries.forEach { ent ->
-                    if (dest.containsKey(ent.key)) {
-                        dest[ent.key] = dest[ent.key]!!.plus(ent.value)
-                    } else {
-                        dest[ent.key] = ent.value
-                    }
-                }
-                dest
-            }.apply {
-                if (i < michaelsoft.size - 1) this[window.last().toString()] = this[window.last().toString()]!! - 1
-            }
-//            println(m20)
-            println(map)
-            results.add(BloomResult(window, map))
+        println("calculating rule metas")
+        val ruleMetas = rules.entries.map {
+            RuleMeta(
+                it.key,
+                it.value,
+                calculateBloom(it.key, rules, maxTime / 2, it.key.last().toString())
+                    .entries.map { e -> e.key to e.value.toLong() }.toMap()
+            )
         }
-        val counts = results.map { it.outputMap }.foldRight(mutableMapOf<String, Int>()) { src, dest ->
+        val michaelsoft = list.windowed(2, 1)
+        val results = michaelsoft.mapIndexed { index, window ->
+            println("Window: $window")
+            val bl = bloom(window, maxTime / 2, rules)
+            val binbows = bl.windowed(2, 1)
+            val bl2 = binbows.mapIndexed { idx, bin ->
+                ruleMetas.first { it.condition == bin }.spreads.toMutableMap().apply {
+                    if (idx == binbows.lastIndex) this[bin.last().toString()] = this[bin.last().toString()]!! + 1
+                }
+            }
+            foldMapsTogether(bl2).apply {
+                if (index < michaelsoft.lastIndex) this[window.last().toString()] = this[window.last().toString()]!! - 1
+            }
+        }
+        val counts = foldMapsTogether(results)
+        return counts.maxOf { it.value } - counts.minOf { it.value }
+    }
+
+    private fun foldMapsTogether(bl2: List<MutableMap<String, Long>>) =
+        bl2.foldRight(mutableMapOf<String, Long>()) { src, dest ->
             src.entries.forEach { ent ->
                 if (dest.containsKey(ent.key)) {
                     dest[ent.key] = dest[ent.key]!!.plus(ent.value)
@@ -107,14 +79,17 @@ object Day14 {
             }
             dest
         }
-        return counts.maxOf { it.value } - counts.minOf { it.value }
-    }
+
+    private data class RuleMeta(val condition: String, val output: String, val spreads: Map<String, Long>)
 
     private fun calculateBloom(
         list: String,
         rules: Map<String, String>,
         bloomSize: Int,
-    ): Map<String, Int> = bloom(list, bloomSize, rules).groupingBy { it.toString() }.eachCount()
+        minusChar: String? = null
+    ): Map<String, Int> = bloom(list, bloomSize, rules).groupingBy { it.toString() }.eachCount().toMutableMap().apply {
+        if (minusChar != null) this[minusChar] = this[minusChar]!! - 1
+    }
 
 
     private fun bloom(
@@ -134,7 +109,6 @@ object Day14 {
         return lt
     }
 
-    data class BloomResult(val condition: String, val outputMap: Map<String, Int>)
 }
 
 
