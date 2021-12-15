@@ -42,30 +42,24 @@ object Day15 {
 
         var leastCost = Int.MAX_VALUE
         for (i in 0..numPermutations) {
-            val directions = i.toString(2).padStart(shortestPathLen, '0')
-            if (directions.contains(listOfOnes(grid.size - 1)) || directions.contains(listOfZeroes(grid.size - 1))) continue
+//            val directions = i.toString(2).padStart(shortestPathLen, '0')
+//            if (directions.contains(listOfOnes(grid.size - 1)) || directions.contains(listOfZeroes(grid.size - 1))) continue
 //            println("$i -> $directions")
-            val walkScore = walkThroughGrid(grid, directions)
-            val walk2 = walkThroughGrid2(grid,i,shortestPathLen)
-//            if (walkScore < Int.MAX_VALUE) println("$directions -> $walkScore")
+//            val walkScore = walkThroughGrid(grid, directions)
+            val walkScore = walkThroughGrid2(grid,i,shortestPathLen)
+            if (walkScore < Int.MAX_VALUE) println("$i -> $walkScore")
             if (walkScore < leastCost) leastCost = walkScore
-            assertEquals(walkScore,walk2)
+//            assertEquals(walkScore,walk2)
         }
         return leastCost
     }
-
-    private fun listOfOnes(size: Int) = List(size) { '1' }.joinToString("")
-    private fun listOfZeroes(size: Int) = List(size) { '0' }.joinToString("")
 
     private fun walkThroughGrid2(grid: List<List<Node>>, directions: Long, pathLen: Int): Int {
         var currentCost = 0
         var rowNum = grid.lastIndex
         var colNum = grid.lastIndex
 
-        if (directions == 197309L)
-            println(grid.joinToString("\n") { it.joinToString { it.costToEnter.toString() } })
-
-        for (i in 0..pathLen) {
+        for (i in 0 until pathLen) {
             currentCost += grid[rowNum][colNum].costToEnter
 //            println("$i ${((directions shr i) and 0x1).toString(2)} ${directions.toString(2)}")
             when ((directions shr i) and 0x1) {
@@ -75,7 +69,7 @@ object Day15 {
                 }
                 else -> {
                     colNum--
-                    if (colNum <0) return Int.MAX_VALUE
+                    if (colNum < 0) return Int.MAX_VALUE
                 }
             }
         }
