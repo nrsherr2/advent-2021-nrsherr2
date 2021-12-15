@@ -46,8 +46,10 @@ object Day15 {
             if (directions.contains(listOfOnes(grid.size - 1)) || directions.contains(listOfZeroes(grid.size - 1))) continue
 //            println("$i -> $directions")
             val walkScore = walkThroughGrid(grid, directions)
+            val walk2 = walkThroughGrid2(grid,i,shortestPathLen)
 //            if (walkScore < Int.MAX_VALUE) println("$directions -> $walkScore")
             if (walkScore < leastCost) leastCost = walkScore
+            assertEquals(walkScore,walk2)
         }
         return leastCost
     }
@@ -57,25 +59,25 @@ object Day15 {
 
     private fun walkThroughGrid2(grid: List<List<Node>>, directions: Long, pathLen: Int): Int {
         var currentCost = 0
-        var rowNum = 0
-        var colNum = 0
+        var rowNum = grid.lastIndex
+        var colNum = grid.lastIndex
 
         if (directions == 197309L)
-            println("ok")
+            println(grid.joinToString("\n") { it.joinToString { it.costToEnter.toString() } })
 
         for (i in 0..pathLen) {
-            println("$i ${((directions shr i) and 0x1).toString(2)} ${directions.toString(2)}")
+            currentCost += grid[rowNum][colNum].costToEnter
+//            println("$i ${((directions shr i) and 0x1).toString(2)} ${directions.toString(2)}")
             when ((directions shr i) and 0x1) {
                 1L -> {
-                    rowNum++
-                    if (rowNum > grid.lastIndex) return Int.MAX_VALUE
+                    rowNum--
+                    if (rowNum < 0) return Int.MAX_VALUE
                 }
                 else -> {
-                    colNum++
-                    if (colNum > grid[0].lastIndex) return Int.MAX_VALUE
+                    colNum--
+                    if (colNum <0) return Int.MAX_VALUE
                 }
             }
-            currentCost += grid[rowNum][colNum].costToEnter
         }
         return currentCost
     }
