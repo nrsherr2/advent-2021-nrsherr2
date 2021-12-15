@@ -43,13 +43,43 @@ object Day15 {
         var leastCost = Int.MAX_VALUE
         for (i in 0..numPermutations) {
             val directions = i.toString(2).padStart(shortestPathLen, '0')
-            if (i % 10000 == 0L) println(directions)
+            if (directions.contains(listOfOnes(grid.size - 1)) || directions.contains(listOfZeroes(grid.size - 1))) continue
+//            println("$i -> $directions")
             val walkScore = walkThroughGrid(grid, directions)
-            if (walkScore < Int.MAX_VALUE) println("$directions -> $walkScore")
+//            if (walkScore < Int.MAX_VALUE) println("$directions -> $walkScore")
             if (walkScore < leastCost) leastCost = walkScore
         }
         return leastCost
     }
+
+    private fun listOfOnes(size: Int) = List(size) { '1' }.joinToString("")
+    private fun listOfZeroes(size: Int) = List(size) { '0' }.joinToString("")
+
+    private fun walkThroughGrid2(grid: List<List<Node>>, directions: Long, pathLen: Int): Int {
+        var currentCost = 0
+        var rowNum = 0
+        var colNum = 0
+
+        if (directions == 197309L)
+            println("ok")
+
+        for (i in 0..pathLen) {
+            println("$i ${((directions shr i) and 0x1).toString(2)} ${directions.toString(2)}")
+            when ((directions shr i) and 0x1) {
+                1L -> {
+                    rowNum++
+                    if (rowNum > grid.lastIndex) return Int.MAX_VALUE
+                }
+                else -> {
+                    colNum++
+                    if (colNum > grid[0].lastIndex) return Int.MAX_VALUE
+                }
+            }
+            currentCost += grid[rowNum][colNum].costToEnter
+        }
+        return currentCost
+    }
+
 
     private fun walkThroughGrid(grid: List<List<Node>>, directions: String): Int {
         var currentCost = 0
@@ -68,6 +98,7 @@ object Day15 {
             }
             currentCost += grid[rowNum][colNum].costToEnter
         }
+        if (currentCost == 40) println(directions.toInt(2))
         return currentCost
     }
 
