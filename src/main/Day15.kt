@@ -1,3 +1,4 @@
+import kotlin.math.pow
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -24,14 +25,81 @@ fun main() {
 object Day15 {
     fun part1(input: List<String>): Int {
         val grid = parseInput(input)
-        val maxStackSize = grid.flatten().size / 2
-        val end = grid[grid.lastIndex][grid[0].lastIndex]
-        return recursiveSearch(Int.MAX_VALUE, listOf(grid[0][0]), end, 0, maxStackSize)
+//        val maxStackSize = grid.flatten().size.toDouble() / 4.9
+//        val end = grid[grid.lastIndex][grid[0].lastIndex]
+//        return listySearch(grid)
+        return permySearch(grid)
     }
 
     fun part2(input: List<String>): Int {
         return 0
     }
+
+    private fun permySearch(grid: List<List<Node>>): Int {
+        val shortestPathLen = grid.size + grid[0].size - 2
+        val numPermutations = 2.0.pow(shortestPathLen).toLong()
+        println(numPermutations)
+
+        var leastCost = Int.MAX_VALUE
+        for (i in 0..numPermutations) {
+            val directions = i.toString(2).padStart(shortestPathLen, '0')
+            if (i % 10000 == 0L) println(directions)
+            val walkScore = walkThroughGrid(grid, directions)
+            if (walkScore < Int.MAX_VALUE) println("$directions -> $walkScore")
+            if (walkScore < leastCost) leastCost = walkScore
+        }
+        return leastCost
+    }
+
+    private fun walkThroughGrid(grid: List<List<Node>>, directions: String): Int {
+        var currentCost = 0
+        var rowNum = 0
+        var colNum = 0
+        directions.forEach {
+            when (it) {
+                '1' -> {
+                    rowNum++
+                    if (rowNum > grid.lastIndex) return Int.MAX_VALUE
+                }
+                else -> {
+                    colNum++
+                    if (colNum > grid[0].lastIndex) return Int.MAX_VALUE
+                }
+            }
+            currentCost += grid[rowNum][colNum].costToEnter
+        }
+        return currentCost
+    }
+
+    private fun listySearch(grid: List<List<Node>>): Int {
+        var chains = mutableListOf(listOf(grid[0][0]))
+        val end = grid[grid.lastIndex][grid[0].lastIndex]
+        var minFinalChainCost = Int.MAX_VALUE
+        while (chains.isNotEmpty()) {
+            if (chains.map { it.chainCost() }.distinct().size > 10) {
+                val avg = chains.map { it.chainCost() }.average() + 5
+                chains = chains.filter { it.chainCost() < avg }.toMutableList()
+            }
+            chains = chains.filter { it.chainCost() < minFinalChainCost }.toMutableList()
+            println(chains.size)
+            chains.toList().forEach { chain ->
+                chains.remove(chain)
+                chains.addAll(chain.last().neighbors.filter { it !in chain }.map { newNode ->
+                    val newChain = chain + newNode
+//                    if(newChain.joinToString(", ") { it.costToEnter.toString() } == "1, 1, 2, 1, 3, 6, 5, 1, 1, 1, 5, 1, 1, 3, 2, 3, 2, 1, 1")
+//                        throw IllegalArgumentException()
+                    if (newNode == end) {
+                        val cost = newChain.chainCost()
+                        println("${newChain.map { it.costToEnter }} $cost")
+                        if (cost < minFinalChainCost) minFinalChainCost = cost
+                    }
+                    newChain
+                })
+            }
+        }
+        return minFinalChainCost
+    }
+
 
     private fun recursiveSearch(
         currentMinCost: Int,
@@ -40,16 +108,14 @@ object Day15 {
         currentLevel: Int,
         maxLevel: Int
     ): Int {
-        if (currentLevel == maxLevel) return Int.MAX_VALUE.also { println("too far!") }
+        if (currentLevel == maxLevel) return Int.MAX_VALUE
         var mutableMinCost = currentMinCost
         val currentNode = currentChain.last()
         currentNode.neighbors.forEach { neighborNode ->
             val neighborCost = currentChain.chainCost() + neighborNode.costToEnter
             if (neighborNode == end) return neighborCost.also {
                 println(
-                    "${
-                        currentChain.plus(neighborNode).map { it.costToEnter }
-                    } $neighborCost"
+                    "${currentChain.plus(neighborNode).map { it.costToEnter }} $neighborCost"
                 )
             }
             if (neighborCost > mutableMinCost || currentChain.contains(neighborNode)) return@forEach
@@ -65,7 +131,7 @@ object Day15 {
         grid.forEachIndexed { rowNum, nodes ->
             nodes.forEachIndexed { colNum, node ->
                 node.neighbors =
-                    listOf(rowNum - 1 to colNum, rowNum + 1 to colNum, rowNum to colNum - 1, rowNum to colNum + 1)
+                    listOf(rowNum + 1 to colNum, rowNum to colNum + 1)
                         .filter { it.first in grid.indices && it.second in nodes.indices }
                         .map { grid[it.first][it.second] }
                         .toSet()
