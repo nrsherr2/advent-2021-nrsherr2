@@ -1,9 +1,9 @@
-import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
 fun main() {
     val day15ExampleInput = readInput("Day15_Test")
     assertEquals(40, Day15.part1(day15ExampleInput))
+    assertEquals(315, Day15.part2(day15ExampleInput))
     val day15Input = readInput("Day15_Input")
 
     val timeToExecuteDay15 = measureTimeMillis {
@@ -58,6 +58,27 @@ object Day15 {
 
     private fun parseInput(input: List<String>): List<List<Node>> {
         val grid = input.map { it.map { num -> Node(num.digitToInt()) } }
+        grid.forEachIndexed { rowNum, nodes ->
+            nodes.forEachIndexed { colNum, node ->
+                node.neighbors =
+                    listOf(rowNum - 1 to colNum, rowNum + 1 to colNum, rowNum to colNum - 1, rowNum to colNum + 1)
+                        .filter { it.first in grid.indices && it.second in nodes.indices }
+                        .map { grid[it.first][it.second] }
+                        .toSet()
+            }
+        }
+        return grid
+    }
+
+    private fun parseInput2(input: List<String>): List<List<Node>> {
+        val grid = (0 until 5).flatMap { iFactor ->
+            (0 until 5).flatMap { jFactor ->
+                input.map { row ->
+                    row.map { num -> Node((num.digitToInt() + iFactor + jFactor - 1) % 10 + 1) }
+                }
+            }
+        }
+//        val grid = input.map { it.map { num -> Node(num.digitToInt()) } }
         grid.forEachIndexed { rowNum, nodes ->
             nodes.forEachIndexed { colNum, node ->
                 node.neighbors =
