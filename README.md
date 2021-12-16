@@ -1,14 +1,8 @@
 # advent-2021-nrsherr2
 
-Welcome to the Advent of Code[^aoc] Kotlin project created by [nrsherr2][github] using the [Advent of Code Kotlin Template][template] delivered by JetBrains.
+Advent of Code[^aoc] Kotlin project created by [nrsherr2][github] using the [Advent of Code Kotlin Template][template] delivered by JetBrains.
 
-In this repository, nrsherr2 is providing solutions for the puzzles using [Kotlin][kotlin] language.
-
-If you're stuck with Kotlin-specific questions or anything related to this template, check out the following resources:
-
-- [Kotlin docs][docs]
-- [Kotlin Slack][slack]
-- Template [issue tracker][issues]
+Imagine waiting until midnight to start on the day's problem. I start working on each day's problem late into the day, since it's my first opportunity to get started.
 
 ---
 
