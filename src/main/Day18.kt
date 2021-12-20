@@ -1,5 +1,6 @@
 import kotlin.system.measureTimeMillis
 
+
 fun main() {
 //    val day18ExampleInput = readInput("Day18_Test")
 //    assertEquals(45, Day18.part1(day18ExampleInput))
@@ -50,17 +51,18 @@ object Day18 {
                     currentLayer = currentLayer.flatMap { listOf(it.left, it.right) }.filterNotNull().toMutableList()
                     currentLayer.firstOrNull { it.numbersOnlyPair() && it.fourDeep() }?.let {
                         it.explode()
-//                        println("After explode: $head")
+                        println("After explode: $head")
                         return@run
                     }
                     currentLayer.firstOrNull { it.value?.let { v -> v > 9 } == true }?.let {
                         it.split()
-//                        println("After split: $head")
+                        println("After split: $head")
                         return@run
                     }
                 }
             }
         }
+        println(head)
     }
 
     private fun treeContainsError(head: BinTreeNode): Boolean {
@@ -165,7 +167,9 @@ object Day18 {
         fun leftMost() = if (value != null) this else left
         fun rightMost() = if (value != null) this else right
 
-        fun magnitude(): Long = if (value != null) value!!.toLong() else (3 * left!!.magnitude()) + (2 * right!!.magnitude())
+        fun magnitude(): Long =
+            if (value != null) value!!.toLong() else (3 * left!!.magnitude()) + (2 * right!!.magnitude())
+
     }
 
     val inputs = listOf(
