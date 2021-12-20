@@ -25,18 +25,16 @@ fun main() {
 
 object Day18 {
     fun part1(input: List<String>): Int {
-        input.subList(1, input.lastIndex).foldRight(parseInput(input.first()).first) { line, leftSide ->
+        val cleanHead = input.subList(1, input.size).fold(parseInput(input.first()).first) { leftSide, line ->
             val (rightSide, _) = parseInput(line)
-            val binTr = BinTreeNode().apply {
-                left = leftSide.apply { parent = this }
-                right = rightSide.apply { parent = this }
+            BinTreeNode().apply create@{
+                left = leftSide.apply { parent = this@create }
+                right = rightSide.apply { parent = this@create }
+            }.also {
+                cleanUpTree(it)
             }
-            TODO()
         }
-        input.forEach {
-            val inp = parseInput(it)
-            println(inp.first.toString())
-        }
+//        println(cleanHead)
         return 0
     }
 
@@ -44,7 +42,41 @@ object Day18 {
         return 0
     }
 
-    fun parseInput(line: String, pointer: Int = 0, parent: BinTreeNode? = null): Pair<BinTreeNode, Int> {
+    private fun cleanUpTree(head: BinTreeNode) {
+        while (treeContainsError(head)) {
+            head.run {
+                var currentLayer = mutableListOf(head)
+                while (currentLayer.isNotEmpty()) {
+                    currentLayer = currentLayer.flatMap { listOf(it.left, it.right) }.filterNotNull().toMutableList()
+                    currentLayer.firstOrNull { it.numbersOnlyPair() && it.fourDeep() }?.let {
+                        it.explode()
+//                        println("After explode: $head")
+                        return@run
+                    }
+                    currentLayer.firstOrNull { it.value?.let { v -> v > 9 } == true }?.let {
+                        it.split()
+//                        println("After split: $head")
+                        return@run
+                    }
+                }
+            }
+        }
+    }
+
+    private fun treeContainsError(head: BinTreeNode): Boolean {
+        var currentLayer = mutableListOf(head)
+        while (currentLayer.isNotEmpty()) {
+            currentLayer = currentLayer.flatMap { listOf(it.left, it.right) }.filterNotNull().toMutableList()
+            if (currentLayer.any {
+                    val enclosedByFour = it.numbersOnlyPair() && it.fourDeep()
+                    val overFlow = it.value?.let { v -> v > 9 } == true
+                    enclosedByFour || overFlow
+                }) return true
+        }
+        return false
+    }
+
+    private fun parseInput(line: String, pointer: Int = 0, parent: BinTreeNode? = null): Pair<BinTreeNode, Int> {
         var pt = pointer
         val c = line[pt].also { pt++ }
         if (c == '[') {
