@@ -4,11 +4,11 @@ fun main() {
 //    val day18ExampleInput = readInput("Day18_Test")
 //    assertEquals(45, Day18.part1(day18ExampleInput))
 //    assertEquals(112, Day18.part2(day18ExampleInput))
-    Day18.inputs.forEach { Day18.part1(it) }
+    Day18.inputs.forEach { println(Day18.part1(it)) }
     val day18Input = readInput("Day18_Input")
 
     val timeToExecuteDay18 = measureTimeMillis {
-        val part1Output = Day18.part1(day18Input)
+        val part1Output = Day18.part1(day18Input) //it's not 1860
         val part2Output = Day18.part2(day18Input)
         println(
             """
@@ -24,7 +24,7 @@ fun main() {
 }
 
 object Day18 {
-    fun part1(input: List<String>): Int {
+    fun part1(input: List<String>): Long {
         val cleanHead = input.subList(1, input.size).fold(parseInput(input.first()).first) { leftSide, line ->
             val (rightSide, _) = parseInput(line)
             BinTreeNode().apply create@{
@@ -34,8 +34,8 @@ object Day18 {
                 cleanUpTree(it)
             }
         }
-//        println(cleanHead)
-        return 0
+        println(cleanHead)
+        return cleanHead.magnitude()
     }
 
     fun part2(input: List<String>): Int {
@@ -164,6 +164,8 @@ object Day18 {
 
         fun leftMost() = if (value != null) this else left
         fun rightMost() = if (value != null) this else right
+
+        fun magnitude(): Long = if (value != null) value!!.toLong() else (3 * left!!.magnitude()) + (2 * right!!.magnitude())
     }
 
     val inputs = listOf(
