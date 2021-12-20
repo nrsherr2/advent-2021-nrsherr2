@@ -26,10 +26,19 @@ object Day15 {
     fun part1(input: List<String>): Int {
         val grid = parseInput(input)
         val source = grid[0][0]
+        val end = grid[grid.lastIndex][grid.lastIndex]
+        return dijkstra(grid.flatten().toSet(), source, end)
+    }
+
+    private fun dijkstra(
+        grid: Set<Node>,
+        source: Node,
+        end: Node
+    ): Int {
         val unusedNodes = mutableSetOf<Node>()
         val dist = mutableMapOf<Node, Int>()
         val hops = mutableMapOf<Node, Node?>()
-        grid.flatten().forEach { n ->
+        grid.forEach { n ->
             dist[n] = Int.MAX_VALUE
             hops[n] = null
             unusedNodes.add(n)
@@ -37,6 +46,7 @@ object Day15 {
         dist[source] = 0
 
         while (unusedNodes.isNotEmpty()) {
+            if(unusedNodes.size % 10 == 0) println(unusedNodes.size)
             val minDist = dist.filter { it.key in unusedNodes }.minByOrNull { it.value }!!.key
             unusedNodes.remove(minDist)
             val unusedNeighbors = minDist.neighbors.filter { it in unusedNodes }
@@ -48,12 +58,12 @@ object Day15 {
                 }
             }
         }
-        val end = grid[grid.lastIndex][grid.lastIndex]
         return dist[end]!!
     }
 
     fun part2(input: List<String>): Int {
-        return 0
+        val (source, grid, end) = parseInput2(input)
+        return dijkstra(grid, source, end)
     }
 
     private fun parseInput(input: List<String>): List<List<Node>> {
@@ -70,11 +80,11 @@ object Day15 {
         return grid
     }
 
-    private fun parseInput2(input: List<String>): List<List<Node>> {
+    private fun parseInput2(input: List<String>): NodeGroup {
         val grid = (0 until 5).flatMap { iFactor ->
-            (0 until 5).flatMap { jFactor ->
-                input.map { row ->
-                    row.map { num -> Node((num.digitToInt() + iFactor + jFactor - 1) % 10 + 1) }
+            input.map { row ->
+                (0 until 5).flatMap { jFactor ->
+                    row.map { num -> Node((num.digitToInt() + iFactor + jFactor).let { if (it > 9) it - 9 else it }) }
                 }
             }
         }
@@ -88,8 +98,10 @@ object Day15 {
                         .toSet()
             }
         }
-        return grid
+        return NodeGroup(grid[0][0], grid.flatten().toSet(), grid.last().last())
     }
+
+    private data class NodeGroup(val start: Node, val nodes: Set<Node>, val end: Node)
 
     private class Node(val costToEnter: Int) {
         var neighbors: Set<Node> = setOf()
