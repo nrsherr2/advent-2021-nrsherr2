@@ -25,6 +25,14 @@ fun main() {
 
 object Day18 {
     fun part1(input: List<String>): Int {
+        input.subList(1, input.lastIndex).foldRight(parseInput(input.first()).first) { line, leftSide ->
+            val (rightSide, _) = parseInput(line)
+            val binTr = BinTreeNode().apply {
+                left = leftSide.apply { parent = this }
+                right = rightSide.apply { parent = this }
+            }
+            TODO()
+        }
         input.forEach {
             val inp = parseInput(it)
             println(inp.first.toString())
