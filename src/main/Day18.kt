@@ -9,10 +9,10 @@ fun main() {
 //    assertEquals(112, Day18.part2(day18ExampleInput))
 //    Day18.explodeInputsOutputs.forEach { Day18.part0(it) }
 //    Day18.part1(Day18.inputs.first())
-//    Day18.part0(Day18.explodeInputsOutputs.last())
+    Day18.part0(Day18.explodeInputsOutputs.last())
 //    Day18.partAlpha(Day18.aaa.last())
-    Day18.aaa.forEach { Day18.partAlpha(it) }
-    TODO()
+//    Day18.aaa.forEach { Day18.partAlpha(it) }
+//    TODO()
     Day18.inputs.forEach { println(Day18.part1(it)) }
     val day18Input = readInput("Day18_Input")
 
@@ -148,14 +148,23 @@ object Day18 {
             value = null
             left = BinTreeNode(this, l)
             right = BinTreeNode(this, r)
+            cleanUpTree(this)
         }
 
         fun explode() {
-            firstLeft()?.let { it.value = it.value?.plus(left!!.value!!) }
-            firstRight()?.let { it.value = it.value?.plus(right!!.value!!) }
+            val lv = left!!.value!!
+            val rv = right!!.value!!
             right = null
             left = null
             value = 0
+            firstLeft()?.let {
+                it.value = it.value?.plus(lv)
+                it.parent?.parent?.let {p-> cleanUpTree(p) }
+            }
+            firstRight()?.let {
+                it.value = it.value?.plus(rv)
+                it.parent?.parent?.let {p-> cleanUpTree(p) }
+            }
         }
 
         fun fourDeep(curDepth: Int = 0): Boolean {
