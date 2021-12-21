@@ -2,9 +2,17 @@ import kotlin.system.measureTimeMillis
 
 
 fun main() {
+
+
 //    val day18ExampleInput = readInput("Day18_Test")
 //    assertEquals(45, Day18.part1(day18ExampleInput))
 //    assertEquals(112, Day18.part2(day18ExampleInput))
+//    Day18.explodeInputsOutputs.forEach { Day18.part0(it) }
+//    Day18.part1(Day18.inputs.first())
+//    Day18.part0(Day18.explodeInputsOutputs.last())
+//    Day18.partAlpha(Day18.aaa.last())
+    Day18.aaa.forEach { Day18.partAlpha(it) }
+    TODO()
     Day18.inputs.forEach { println(Day18.part1(it)) }
     val day18Input = readInput("Day18_Input")
 
@@ -25,6 +33,28 @@ fun main() {
 }
 
 object Day18 {
+    fun partAlpha(aaa: Pair<List<String>, String>) {
+        val (input, output) = aaa
+        val cleanHead = input.subList(1, input.size).fold(parseInput(input.first()).first) { leftSide, line ->
+            val (rightSide, _) = parseInput(line)
+            BinTreeNode().apply create@{
+                left = leftSide.apply { parent = this@create }
+                right = rightSide.apply { parent = this@create }
+            }.also {
+                cleanUpTree(it)
+            }
+        }
+        assertEquals(output, cleanHead.toString())
+    }
+
+    fun part0(input: Pair<String, String>) {
+        val (line, output) = input
+        val (rightSide, _) = parseInput(line)
+        println(rightSide)
+        cleanUpTree(rightSide)
+        println("$rightSide\n$output\n\n")
+    }
+
     fun part1(input: List<String>): Long {
         val cleanHead = input.subList(1, input.size).fold(parseInput(input.first()).first) { leftSide, line ->
             val (rightSide, _) = parseInput(line)
@@ -164,8 +194,8 @@ object Day18 {
             }
         }
 
-        fun leftMost() = if (value != null) this else left
-        fun rightMost() = if (value != null) this else right
+        fun leftMost(): BinTreeNode = if (value != null) this else left!!.leftMost()
+        fun rightMost(): BinTreeNode = if (value != null) this else right!!.rightMost()
 
         fun magnitude(): Long =
             if (value != null) value!!.toLong() else (3 * left!!.magnitude()) + (2 * right!!.magnitude())
@@ -211,5 +241,21 @@ object Day18 {
             [[[[4,2],2],6],[8,7]]
         """.trimIndent()
     ).map { it.split("\n") }
+
+    val explodeInputsOutputs = listOf(
+        "[[[[[9,8],1],2],3],4]" to "[[[[0,9],2],3],4]",
+        "[7,[6,[5,[4,[3,2]]]]]" to "[7,[6,[5,[7,0]]]]",
+        "[[6,[5,[4,[3,2]]]],1]" to "[[6,[5,[7,0]]],3]",
+        "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]" to "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]",
+        "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]" to "[[3,[2,[8,0]]],[9,[5,[7,0]]]]",
+        "[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]" to "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]"
+    )
+    val aaa = listOf(
+        inputs[0] to "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]",
+        inputs[1] to "[[[[1,1],[2,2]],[3,3]],[4,4]]",
+        inputs[2] to "[[[[3,0],[5,3]],[4,4]],[5,5]]",
+        inputs[3] to "[[[[5,0],[7,4]],[5,5]],[6,6]]",
+        inputs[4] to "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"
+    )
 }
 
