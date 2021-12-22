@@ -7,7 +7,7 @@ import kotlin.system.measureTimeMillis
 fun main() {
     val day19ExampleInput = readInput("Day19_Test")
     assertEquals(79, Day19.part1(day19ExampleInput))
-//    assertEquals(112, Day19.part2(day19ExampleInput))
+    assertEquals(3621, Day19.part2(day19ExampleInput))
     val day19Input = readInput("Day19_Input")
 
     val timeToExecuteDay19 = measureTimeMillis {
@@ -29,20 +29,21 @@ fun main() {
 object Day19 {
     fun part1(input: List<String>): Int {
         val probes = parseInput(input)
-        println(probes.joinToString("\n") { it.toString() })
-      val l =  linkProbes(probes)
+        val l = linkProbes(probes)
         return l.flatMap { it.beacons }.distinct().count()
     }
 
     fun part2(input: List<String>): Int {
-        return 0
+        val probes = parseInput(input)
+        val l = linkProbes(probes)
+        val permutations = l.flatMap { p -> l.map { listOf(p, it) } }
+        return permutations.maxOf { manhattanDistance(it[0], it[1]) }
     }
 
     fun linkProbes(probes: List<Probe>): List<Probe> {
         val curProbes = probes.toMutableList().subList(1, probes.size)
         val mutatedProbes = mutableListOf(probes.first())
         while (curProbes.isNotEmpty()) run {
-            println("pop: ${curProbes.size} ${mutatedProbes.size}")
             val pop = curProbes.removeAt(0)
             for (xRot in 0..3) {
                 for (yRot in 0..3) {
@@ -57,22 +58,13 @@ object Day19 {
                             distanceTrips.firstOrNull { dt -> distanceTrips.count { it.third == dt.third } >= 12 }
                                 ?.let {
                                     val tr = rot.reposition(
-                                        it.first.xCoord - it.second.xCoord,
-                                        it.first.yCoord - it.second.yCoord,
-                                        it.first.zCoord - it.second.zCoord
+                                        it.second.xCoord - it.first.xCoord,
+                                        it.second.yCoord - it.first.yCoord,
+                                        it.second.zCoord - it.first.zCoord
                                     )
                                     mutatedProbes.add(tr)
                                     return@run
                                 }
-//                            val distances = targetProbe.beacons.flatMap { targetBeacon ->
-//                                rot.beacons.map { distance(targetBeacon, it) }
-//                            }.groupingBy { it }.eachCount().filter { it.value >= 12 }
-//                            if (distances.isNotEmpty()) {
-//                                val sourceProbe =
-//                                    rot.beacons.first { distance(it, targetProbe) == distances.keys.first() }
-//                            }
-//                            println(distances.groupingBy { it }.eachCount().filter { it.value > 1 })
-//                            println()
                         }
                     }
                 }
@@ -88,6 +80,8 @@ object Day19 {
                 (beak.yCoord - bacon.yCoord).toDouble().pow(2.0) +
                 (beak.zCoord - bacon.zCoord).toDouble().pow(2.0)
     )
+
+    fun manhattanDistance(p1: Probe, p2: Probe) = p1.xCoord - p2.xCoord + p1.yCoord - p2.yCoord + p1.zCoord - p2.zCoord
 
     fun parseInput(input: List<String>): List<Probe> {
         val starts = input.mapIndexedNotNull { index, s -> index.takeIf { s.startsWith("---") } }
