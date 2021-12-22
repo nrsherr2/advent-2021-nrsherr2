@@ -5,6 +5,7 @@ import kotlin.system.measureTimeMillis
 fun main() {
 //    val day18t2ExampleInput = readInput("Day18t2_Test")
     assertEquals(4140L, Day18t2.part1(Day18t2.exampleInput))
+    assertEquals(3993L, Day18t2.part2(Day18t2.exampleInput))
 //    assertEquals(112, Day18t2.part2(day18t2ExampleInput))
     val day18t2Input = readInput("Day18_Input")
 
@@ -29,12 +30,17 @@ object Day18t2 {
         val heads = input.map { parseInput(it).first }
         heads.forEach { println(it.toString()) }
         val result = heads.reduce { acc, newLine -> cleanUp(acc + newLine) }
-        println(result.toString())
         return result.magnitude()
     }
 
-    fun part2(input: List<String>): Int {
-        return 0
+    fun part2(input: List<String>): Long {
+        val allPerms = permutations(input, 2)
+
+        return allPerms.maxOf {
+            val res = cleanUp(parseInput(it[0]).first + parseInput(it[1]).first)
+            println("${it[0]} + ${it[1]} -> $res (${res.magnitude()})")
+            res.magnitude()
+        }
     }
 
     private fun cleanUp(cHead: SnailfishNumber): SnailfishNumber {
@@ -104,14 +110,11 @@ object Day18t2 {
             }
 
             override fun toString() = "[$left,$right]"
-
-
         }
 
         data class Reg(var value: Int = 0) : SnailfishNumber() {
             override fun toString() = value.toString()
         }
-
 
         fun magnitude(): Long = when (this) {
             is Reg -> value.toLong()
@@ -148,7 +151,7 @@ object Day18t2 {
         return null
     }
 
-    fun explode(num: SnailfishNumber.NumPair) {
+    private fun explode(num: SnailfishNumber.NumPair) {
         firstNonSideParent(num, SnailfishNumber.NumPair::left)?.let { rightMost(it.left) }?.apply {
             value += (num.left as SnailfishNumber.Reg).value
         }
@@ -179,6 +182,42 @@ object Day18t2 {
             [[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
             [[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
         """.trimIndent().split("\n")
+
+    fun <E> permutations(list: List<E>, length: Int? = null): Sequence<List<E>> = sequence {
+        val n = list.size
+        val r = length ?: list.size
+
+        val indices = list.indices.toMutableList()
+        val cycles = (n downTo (n - r)).toMutableList()
+        yield(indices.take(r).map { list[it] })
+
+        while (true) {
+            var broke = false
+            for (i in (r - 1) downTo 0) {
+                cycles[i]--
+                if (cycles[i] == 0) {
+                    val end = indices[i]
+                    for (j in i until indices.size - 1) {
+                        indices[j] = indices[j + 1]
+                    }
+                    indices[indices.size - 1] = end
+                    cycles[i] = n - i
+                } else {
+                    val j = cycles[i]
+                    val tmp = indices[i]
+                    indices[i] = indices[-j + indices.size]
+                    indices[-j + indices.size] = tmp
+                    yield(indices.take(r).map { list[it] })
+                    broke = true
+                    break
+                }
+            }
+            if (!broke) {
+                break
+            }
+        }
+    }
+
 }
 
 
