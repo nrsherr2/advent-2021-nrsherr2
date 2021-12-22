@@ -1,5 +1,7 @@
 import kotlin.math.cos
+import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -28,8 +30,8 @@ object Day19 {
     fun part1(input: List<String>): Int {
         val probes = parseInput(input)
         println(probes.joinToString("\n") { it.toString() })
-        linkProbes(probes)
-        return 0
+      val l =  linkProbes(probes)
+        return l.flatMap { it.beacons }.distinct().count()
     }
 
     fun part2(input: List<String>): Int {
@@ -37,36 +39,55 @@ object Day19 {
     }
 
     fun linkProbes(probes: List<Probe>): List<Probe> {
-        val poolSize = poolSize(probes)
         val curProbes = probes.toMutableList().subList(1, probes.size)
         val mutatedProbes = mutableListOf(probes.first())
         while (curProbes.isNotEmpty()) run {
             println("pop: ${curProbes.size} ${mutatedProbes.size}")
             val pop = curProbes.removeAt(0)
-            for (xTrans in poolSize.minX..poolSize.maxX) {
-                for (yTrans in poolSize.minY..poolSize.maxY) {
-                    for (zTrans in poolSize.minZ..poolSize.maxZ) {
-                        val shifted = pop.reposition(xTrans, yTrans, zTrans)
-                        for (xRot in 0..3) {
-                            for (yRot in 0..3) {
-                                for (zRot in 0..3) {
-                                    val rot = shifted.rotateX(xRot).rotateY(yRot).rotateZ(zRot)
-                                    mutatedProbes.forEach { targetProbe ->
-                                        if (rot.beacons.count { it in targetProbe.beacons } >= 12) {
-                                            mutatedProbes.add(rot)
-                                            return@run
-                                        }
-                                    }
+            for (xRot in 0..3) {
+                for (yRot in 0..3) {
+                    for (zRot in 0..3) {
+                        val rot = pop.rotateX(xRot).rotateY(yRot).rotateZ(zRot)
+                        mutatedProbes.forEach { targetProbe ->
+                            val distanceTrips = targetProbe.beacons.flatMap { targetBeacon ->
+                                rot.beacons.map {
+                                    Triple(it, targetBeacon, distance(it, targetBeacon))
                                 }
                             }
+                            distanceTrips.firstOrNull { dt -> distanceTrips.count { it.third == dt.third } >= 12 }
+                                ?.let {
+                                    val tr = rot.reposition(
+                                        it.first.xCoord - it.second.xCoord,
+                                        it.first.yCoord - it.second.yCoord,
+                                        it.first.zCoord - it.second.zCoord
+                                    )
+                                    mutatedProbes.add(tr)
+                                    return@run
+                                }
+//                            val distances = targetProbe.beacons.flatMap { targetBeacon ->
+//                                rot.beacons.map { distance(targetBeacon, it) }
+//                            }.groupingBy { it }.eachCount().filter { it.value >= 12 }
+//                            if (distances.isNotEmpty()) {
+//                                val sourceProbe =
+//                                    rot.beacons.first { distance(it, targetProbe) == distances.keys.first() }
+//                            }
+//                            println(distances.groupingBy { it }.eachCount().filter { it.value > 1 })
+//                            println()
                         }
                     }
                 }
             }
+
             curProbes.add(pop)
         }
         return mutatedProbes
     }
+
+    fun distance(beak: Beacon, bacon: Beacon) = sqrt(
+        (beak.xCoord - bacon.xCoord).toDouble().pow(2.0) +
+                (beak.yCoord - bacon.yCoord).toDouble().pow(2.0) +
+                (beak.zCoord - bacon.zCoord).toDouble().pow(2.0)
+    )
 
     fun parseInput(input: List<String>): List<Probe> {
         val starts = input.mapIndexedNotNull { index, s -> index.takeIf { s.startsWith("---") } }
@@ -115,20 +136,13 @@ object Day19 {
         }
 
         fun reposition(xCoord: Int = 0, yCoord: Int = 0, zCoord: Int = 0) =
-            this.copy(xCoord, yCoord, zCoord, beacons.toList())
+            this.copy(
+                xCoord = xCoord,
+                yCoord = yCoord,
+                zCoord = zCoord,
+                beacons = beacons.map { Beacon(it.xCoord + xCoord, it.yCoord + yCoord, it.zCoord + zCoord) })
     }
 
-    private fun poolSize(probes: List<Probe>) =
-        probes.flatMap { it.beacons }.let { bcs ->
-            PoolSize(
-                bcs.minOf { it.xCoord },
-                bcs.minOf { it.yCoord },
-                bcs.minOf { it.zCoord },
-                bcs.maxOf { it.xCoord },
-                bcs.maxOf { it.yCoord },
-                bcs.maxOf { it.zCoord }
-            )
-        }
 
     private data class PoolSize(
         val minX: Int,
