@@ -107,7 +107,6 @@ object Day13 {
         }
 
 
-    data class Point(val rowNum: Int, val colNum: Int)
     data class GridSpot(var marked: Boolean = false)
     data class Fold(val axis: Char, val degree: Int)
 }
