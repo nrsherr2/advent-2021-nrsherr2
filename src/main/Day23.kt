@@ -1,4 +1,3 @@
-import java.util.*
 import kotlin.system.measureTimeMillis
 
 fun main() {
@@ -27,37 +26,30 @@ object Day23 {
     fun part1(input: List<String>): Long {
         val board = Board(parseInput(input))
         var maxMvmt = Long.MAX_VALUE
-        val boardsInSpace: Queue<Board> = LinkedList(listOf(board))
+        var boardsInSpace = mutableListOf(board)
         while (boardsInSpace.isNotEmpty()) {
-            val currentBoard = boardsInSpace.poll()
-            if (currentBoard.moves.size == 4 + 4 + 3 + 4 + 2 + 3 + 3 + 4 + 8) {
+            if (boardsInSpace.size % 1000 == 0) {
+                boardsInSpace = boardsInSpace.distinctBy { it.moveMap() }.toMutableList()
                 println(boardsInSpace.size)
-                if (currentBoard.moves.totalCost() == 12521L) {
-                    println("WE FOUND IT")
-                }
             }
-            listOf(desiredState).forEach {
-                if (currentBoard.stringRep() == it) {
-                    println(currentBoard.stringRep())
-                    println()
-                }
-            }
+            val currentBoard = boardsInSpace.removeAt(0)
             if (currentBoard.allSatisfied()) {
                 println(boardsInSpace.size)
                 if (currentBoard.moves.totalCost() < maxMvmt) {
                     maxMvmt = currentBoard.moves.totalCost()
+                    println("Current max: $maxMvmt")
                 }
             }
             val nextBoards = currentBoard.possibleMoveSequences()
                 .map { currentBoard.newBoardWithMoves(it) }
                 .filter { it.uniqueBoardState() && it.moves.totalCost() < maxMvmt }
             nextBoards.forEach { b ->
-                if (boardsInSpace.none { it.moves.sameMoves(b.moves) }) {
+//                if (boardsInSpace.none { it.moves.sameMoves(b.moves) && it.moves.totalCost() < b.moves.totalCost() }) {
 
 //                val matchy = boardsInSpace.count { it.moves.all { it in b.moves } && it.moves.size == b.moves.size}
 //                if (matchy < 1) {
-                    boardsInSpace.offer(b)
-                }
+                boardsInSpace.add(b)
+//                }
 //                }
             }
         }
@@ -74,6 +66,7 @@ object Day23 {
 
         fun newBoardWithMoves(newMoves: List<Move>) = Board(moves = moves + newMoves, crabs = crabs)
 
+        fun moveMap() = moves.groupingBy { it.toString() }.eachCount()
 
         fun uniqueBoardState(): Boolean {
             val locations = getCrabLocations()
@@ -104,76 +97,79 @@ object Day23 {
 
         fun possibleMoveSequences(): List<List<Move>> {
             val locations = getCrabLocations()
-            return crabs.flatMap { crab ->
-                val up = Move(crab.name, Direction.UP)
-                val left = Move(crab.name, Direction.LEFT)
-                val right = Move(crab.name, Direction.RIGHT)
-                val down = Move(crab.name, Direction.DOWN)
-                val crabLoc = locations[crab]!!
-                val otherLocations = locations.filter { it.key != crab }
-                return@flatMap when (crabLoc.rowNum) {
-                    2 -> {
-                        if (otherLocations.none { it.value.colNum == crabLoc.colNum }) {
-                            listOf(listOf(down))
-                        } else if (crabLoc.colNum == crab.desiredColumn() && otherLocations.any { it.value.rowNum == 3 && it.value.colNum == crabLoc.colNum && it.key.desiredColumn() == crab.desiredColumn() }) {
-                            emptyList()
-                        } else {
-                            val possibleMoves = mutableListOf<List<Move>>()
-                            for (dest in listOf(1, 2, 4, 6, 8, 10, 11)) run {
-                                val muta = mutableListOf(up)
-                                if (dest < crabLoc.colNum) for (i in (crabLoc.colNum - 1) downTo dest) {
-                                    if (otherLocations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@run
-                                    muta.add(left)
-                                } else for (i in (crabLoc.colNum + 1)..dest) {
-                                    if (otherLocations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@run
-                                    muta.add(right)
-                                }
-                                possibleMoves.add(muta)
-                            }
-                            possibleMoves
-                        }
+            //prioritize moving down if you're home
+            locations.entries.firstOrNull { (crab, loc) ->
+                loc.rowNum == 2 &&
+                        locations.none { it.value.rowNum == 3 && it.value.colNum == loc.colNum } &&
+                        loc.colNum == crab.desiredColumn()
+            }?.let {
+                return listOf(listOf(Move(it.key.name, Direction.DOWN)))
+            }
+            //prioritize moving up if you're not at home
+            locations.entries.firstOrNull { (crab, loc) ->
+                loc.rowNum == 3 &&
+                        locations.none { it.value.rowNum == 2 && it.value.colNum == loc.colNum } &&
+                        loc.colNum != crab.desiredColumn()
+            }?.let {
+                return listOf(listOf(Move(it.key.name, Direction.UP)))
+            }
+            //prioritize moving into your home
+            locations.filter { (crab, loc) ->
+                //you're in the hallway
+                loc.rowNum == 1 &&
+                        //nobody's in the door to your room
+                        locations.none { it.value.colNum == crab.desiredColumn() && it.value.rowNum == 2 } &&
+                        //there isn't a stranger in your room
+                        locations.none { it.value.colNum == crab.desiredColumn() && it.value.rowNum == 3 && it.key.desiredColumn() != it.value.colNum }
+            }.mapNotNull { (crab, loc) ->
+                val muta = mutableListOf(Move(crab.name, Direction.DOWN))
+                if (crab.desiredColumn() < loc.colNum) {
+                    val left = Move(crab.name, Direction.LEFT)
+                    for (i in (loc.colNum - 1) downTo crab.desiredColumn()) {
+                        if (locations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@mapNotNull null
+                        muta.add(left)
                     }
-                    3 -> {
-                        if (otherLocations.any { it.value.colNum == crabLoc.colNum }) emptyList()
-                        else {
-                            val possibleMoves = mutableListOf<List<Move>>()
-                            for (dest in listOf(1, 2, 4, 6, 8, 10, 11)) run {
-                                val muta = mutableListOf(up, up)
-                                if (dest < crabLoc.colNum) for (i in (crabLoc.colNum - 1) downTo dest) {
-                                    if (otherLocations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@run
-                                    muta.add(left)
-                                } else for (i in (crabLoc.colNum + 1)..dest) {
-                                    if (otherLocations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@run
-                                    muta.add(right)
-                                }
-                                possibleMoves.add(muta)
-                            }
-                            possibleMoves
-                        }
-                    }
-                    1 -> {
-                        val muta = mutableListOf(down)
-                        val dest = crab.desiredColumn()
-                        if (otherLocations.any { it.value.rowNum == 2 && it.value.colNum == dest }) return@flatMap emptyList()
-                        if (otherLocations.any {
-                                it.value.rowNum == 3 && it.value.colNum == dest && !it.key.name.startsWith(crab.name.first())
-                            }) {
-                            return@flatMap emptyList()
-                        }
-                        if (dest < crabLoc.colNum) for (i in (crabLoc.colNum - 1) downTo dest) {
-                            if (otherLocations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@flatMap emptyList()
-                            muta.add(left)
-                        } else for (i in (crabLoc.colNum + 1)..dest) {
-                            if (otherLocations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@flatMap emptyList()
-                            muta.add(right)
-                        }
-                        listOf(muta)
-                    }
-                    else -> {
-                        emptyList()
+                } else {
+                    val right = Move(crab.name, Direction.RIGHT)
+                    for (i in (loc.colNum + 1)..crab.desiredColumn()) {
+                        if (locations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@mapNotNull null
+                        muta.add(right)
                     }
                 }
-            }
+                muta
+            }.takeIf { it.isNotEmpty() }?.let { return it }
+            //last condition, move to a hallway
+            locations.filter { (crab, loc) ->
+                //you're in a doorway
+                loc.rowNum == 2 &&
+                        //you want out
+                        (loc.colNum != crab.desiredColumn() ||
+                                //someone below you wants out
+                                locations.any { it.value.rowNum == 3 && it.value.colNum == loc.colNum && it.key.desiredColumn() != it.value.colNum })
+            }.flatMap { (crab, loc) ->
+                val possibleMoves = mutableListOf<List<Move>>()
+                val up = Move(crab.name, Direction.UP)
+                for (dest in listOf(1, 2, 4, 6, 8, 10, 11)) run {
+                    val muta = mutableListOf(up)
+                    if (dest < loc.colNum) {
+                        val left = Move(crab.name, Direction.LEFT)
+                        for (i in (loc.colNum - 1) downTo dest) {
+                            if (locations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@run
+                            muta.add(left)
+                        }
+                    } else {
+                        val right = Move(crab.name, Direction.RIGHT)
+                        for (i in (loc.colNum + 1)..dest) {
+                            if (locations.any { it.value.rowNum == 1 && it.value.colNum == i }) return@run
+                            muta.add(right)
+                        }
+                    }
+                    possibleMoves.add(muta)
+                }
+                possibleMoves
+            }.takeIf { it.isNotEmpty() }?.let { return it }
+            //nothing
+            return emptyList()
         }
 
         fun stringRep(): String {
@@ -265,22 +261,22 @@ object Day23 {
     val step1 = """
 #############
 #.....D.....#
-###B#.#C#D###
 ###A#B#C#A###
+###.#B#C#D###
 #############
     """.trimIndent()
     val step2 = """
 #############
-#...B.D.....#
-###.#.#C#D###
-###A#B#C#A###
+#.....D...A.#
+###.#B#C#.###
+###A#B#C#D###
 #############
     """.trimIndent()
     val step3 = """
 #############
-#.....D.....#
-###.#B#C#D###
-###A#B#C#A###
+#...B.......#
+###B#D#C#D###
+###A#.#C#A###
 #############
     """.trimIndent()
 }
