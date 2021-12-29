@@ -44,13 +44,7 @@ object Day23 {
                 .map { currentBoard.newBoardWithMoves(it) }
                 .filter { it.uniqueBoardState() && it.moves.totalCost() < maxMvmt }
             nextBoards.forEach { b ->
-//                if (boardsInSpace.none { it.moves.sameMoves(b.moves) && it.moves.totalCost() < b.moves.totalCost() }) {
-
-//                val matchy = boardsInSpace.count { it.moves.all { it in b.moves } && it.moves.size == b.moves.size}
-//                if (matchy < 1) {
                 boardsInSpace.add(b)
-//                }
-//                }
             }
         }
         return maxMvmt
