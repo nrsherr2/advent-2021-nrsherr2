@@ -29,6 +29,7 @@ object Day24 {
     fun part1(input: List<String>): Long {
         (99999999999999 downTo 10000000000000).asSequence().map { it.toString().toCharArray().toMutableList() }
             .filter { !it.contains('0') }.forEach { num ->
+                val originalNum = num.joinToString("").toLong()
                 if(num.joinToString("").toLong() % 10013 == 0L) println(num)
 //                print("${num.joinToString("")} -> ")
                 val alu = ALU()
@@ -44,7 +45,7 @@ object Day24 {
                     }
                 }
 //                println(alu.report())
-                if (alu.z == 0) return num.joinToString("").toLong()
+                if (alu.z == 0) return originalNum
             }
         return 0
     }
