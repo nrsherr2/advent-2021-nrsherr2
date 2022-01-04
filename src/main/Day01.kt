@@ -5,16 +5,16 @@ fun main() {
         //given the example for part 1, ensure we get the same result they do
         val day1ExampleInput = readInput("Day01_Test")
         val day1Input = readInput("Day01_Input")
-    
+
         val part1ExampleOutput = part1(day1ExampleInput)
-        assertEquals(7,part1ExampleOutput)
+        assertEquals(7, part1ExampleOutput)
         val part2ExampleOutput = part2(day1ExampleInput)
-        assertEquals(5,part2ExampleOutput)
-        
+        assertEquals(5, part2ExampleOutput)
+
         val timeToExecuteDay1 = measureTimeMillis {
             val part1Output = part1(day1Input)
             val part2Output = part2(day1Input)
-            
+
             println(
                 """
                 *** PART 1 ***
@@ -31,26 +31,14 @@ fun main() {
 
 class Day01 {
     fun part1(input: List<String>): Int {
-        val depthReadings = input.map { it.toInt() }
-        return depthReadings.filterIndexed { index, depth ->
-            if (index == 0) return@filterIndexed false
-            else depthReadings[index - 1] < depth
-        }.size
+        return input.map { it.toInt() }.windowed(2).count { it[0] < it[1] }
     }
-    
+
     fun part2(input: List<String>): Int {
         val depthReadings = input.map { it.toInt() }
-        val windows = depthReadings
-            .filterIndexed { index, _ -> index + 2 < depthReadings.size }
-            .mapIndexed { index, depth ->
-                val partA = depth
-                val partB = depthReadings[index + 1]
-                val partC = depthReadings[index + 2]
-                partA + partB + partC
-            }
-        return part1(windows.map { it.toString() })
+        return part1(depthReadings.windowed(3).map { (it[0] + it[1] + it[2]).toString() })
     }
-    
+
 
 }
 

@@ -34,14 +34,7 @@ object Day04 {
     fun parseInput(inputLines: List<String>): BingoGame {
         val callOrder = inputLines.first().split(",").map { it.toInt() }
         val justBoards = inputLines.drop(1).filter { it.isNotBlank() }
-        val numberOfBoards = justBoards.size / 5
-        val boards = (0 until numberOfBoards).map { i ->
-            val startIndex = i * 5
-            val endIndex = startIndex + 5
-            val lines = justBoards.subList(startIndex, endIndex)
-            assertEquals(5, lines.size)
-            return@map BingoBoard(lines)
-        }
+        val boards = justBoards.chunked(5).map { BingoBoard(it) }
         return BingoGame(callOrder, boards)
     }
 }
